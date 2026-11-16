@@ -158,3 +158,18 @@ def test_a_shared_photo_is_deleted_only_when_nothing_uses_it(alice, basket):
     alice.request("GET", f"/photos/{photo}/thumb", 200)  # encore utilisée par le parallèle
     alice.delete(f"/parallels/{parallel['id']}", expect=204)
     alice.request("GET", f"/photos/{photo}/thumb", 404)
+
+
+def test_adding_a_price_to_a_parallel_creates_a_linked_purchase_once(alice, basket):
+    """F-17 : « Ajouter le prix d'achat » sur un parallèle, sans double saisie."""
+    follow(alice, basket)
+    ref = refs(alice, basket)["83"]
+    parallel = alice.post(f"/cards/{ref}/parallels", json={"name": "Orange 07/25"}, expect=201).json()
+    priced = alice.post(
+        f"/parallels/{parallel['id']}/purchase", json={"price": "25", "platform": "Vinted"}, expect=201
+    )
+    assert priced.json()["purchase"]["price"] == "25.00"
+    purchases = alice.get("/purchases")
+    assert [(p["variant"], p["code"], p["applied"]) for p in purchases] == [("Orange 07/25", "83", True)]
+    assert len(alice.get(f"/cards/{ref}")["parallels"]) == 1  # pas de second parallèle
+    alice.post(f"/parallels/{parallel['id']}/purchase", json={"price": "1"}, expect=409)

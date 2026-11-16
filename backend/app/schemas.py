@@ -6,17 +6,23 @@ de prix, de date d'achat, de plateforme ni de quantité.
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field
 
 
 class Out(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-Amount = Decimal | None
+def _cents(value: Decimal | None) -> Decimal | None:
+    """Les montants sortent toujours avec deux décimales, qu'ils viennent de la base ou d'une saisie."""
+    return None if value is None else value.quantize(Decimal("0.01"))
+
+
+Amount = Annotated[Decimal | None, AfterValidator(_cents)]
+Cents = Annotated[Decimal, AfterValidator(_cents)]
 
 # ------------------------------------------------------------------ comptes
 
@@ -321,6 +327,13 @@ class ParallelIn(BaseModel):
     photo_id: UUID | None = None
 
 
+class ParallelPriceIn(BaseModel):
+    price: Decimal = Field(ge=0)
+    fees: Amount = Field(None, ge=0)
+    bought_on: date | None = None
+    platform: str = Field("", max_length=80)
+
+
 class CardOut(BaseModel):
     """Fiche d'une carte (F-13 à F-15)."""
 
@@ -436,16 +449,16 @@ class PurchaseOut(Out):
 class AmountRow(BaseModel):
     key: int | str | None
     count: int
-    amount: Decimal
+    amount: Cents
 
 
 class SummaryOut(BaseModel):
     count: int
-    invested: Decimal
+    invested: Cents
     sold_count: int
-    sales_result: Decimal
+    sales_result: Cents
     kept_count: int
-    kept_amount: Decimal
+    kept_amount: Cents
     by_universe: list[AmountRow]
     by_platform: list[AmountRow]
 

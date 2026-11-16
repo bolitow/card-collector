@@ -1,0 +1,38 @@
+# Recette et production : Caddy (TLS), API, worker. La base et le stockage objet sont des services gérés.
+# Les variables viennent d'un fichier .env posé sur le serveur, jamais du dépôt.
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+
+  migrate:
+    image: ${IMAGE}
+    command: alembic upgrade head
+    env_file: .env
+
+  api:
+    image: ${IMAGE}
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')"]
+      interval: 30s
+
+  worker:
+    image: ${IMAGE}
+    restart: unless-stopped
+    command: python -m app.worker
+    env_file: .env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+volumes:
+  caddy_data:

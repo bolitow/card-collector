@@ -1,0 +1,45 @@
+# Développement : `docker compose up` puis http://localhost:8000
+# Stockage sur disque, e-mails dans la console, IA simulée. Aucune donnée réelle (section 16).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: cc_dev
+    ports: ["5433:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      retries: 20
+
+  migrate:
+    build: .
+    command: alembic upgrade head
+    environment: &env
+      CC_ENV: dev
+      CC_DATABASE_URL: postgresql+psycopg://postgres:dev@db:5432/cc_dev
+      CC_APP_URL: http://localhost:8000
+      CC_ADMIN_REQUIRE_TOTP: "false"
+    depends_on:
+      db: { condition: service_healthy }
+
+  api:
+    build: .
+    environment: *env
+    ports: ["8000:8000"]
+    volumes: [storage:/srv/backend/var]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  worker:
+    build: .
+    command: python -m app.worker
+    environment: *env
+    volumes: [storage:/srv/backend/var]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+volumes:
+  pgdata:
+  storage:

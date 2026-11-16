@@ -43,3 +43,5 @@ addopts = "-q"
 "app/services/ai.py" = ["E501"]   # consignes envoyées au modèle
 "app/services/mail.py" = ["E501"] # textes des e-mails
 "migrations/versions/*" = ["E501"]
+"scripts/seed_dev.py" = ["E501"]         # listes de données de démonstration
+"tests/*" = ["E501"]

@@ -1,0 +1,12 @@
+{
+  "name": "card-collector-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "flows": "node flows.mjs",
+    "captures": "node captures.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.49.0"
+  }
+}

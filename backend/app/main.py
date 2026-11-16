@@ -4,7 +4,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from fastapi import APIRouter, FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from starlette.middleware.gzip import GZipMiddleware
@@ -17,7 +17,8 @@ from app.errors import AppError, app_error_handler
 UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 CSP = (
     "default-src 'self'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; "
-    "script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    "font-src 'self' data:; script-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; "
+    "frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 )
 
 
@@ -44,7 +45,13 @@ def create_app() -> FastAPI:
             own = f"{request.url.scheme}://{request.headers.get('host', '')}"
             if origin and origin not in (allowed_origin, own):
                 return JSONResponse({"error": {"code": "bad_origin", "message": ""}}, status_code=403)
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except RuntimeError:
+            # Le navigateur a coupé avant la réponse (réseau perdu) : rien à renvoyer, rien à journaliser.
+            if await request.is_disconnected():
+                return Response(status_code=499)
+            raise
         response.headers["X-App-Version"] = (
             settings.app_version
         )  # l'interface se met à jour d'elle-même (8.3)

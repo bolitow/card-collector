@@ -19,3 +19,6 @@ web/dev-dist/
 # Divers
 .DS_Store
 *.log
+web/openapi.json
+e2e/*.png
+e2e/node_modules/

@@ -50,6 +50,13 @@ def get_photo(photo_id: UUID, size: str, user: CurrentUser, db: Db) -> Response:
     return serve(photo, size, public=False)
 
 
+@router.delete("/photos/{photo_id}", status_code=204)
+def discard_photo(photo_id: UUID, user: CurrentUser, db: Db) -> None:
+    """F-21 : si l'enregistrement de la carte échoue, la photo envoyée est supprimée.
+    Sans effet sur une photo encore utilisée (RG-14)."""
+    photos.release(db, photos.owned(db, user, photo_id).id)
+
+
 @router.get("/public/photos/{photo_id}/{size}")
 def get_public_photo(photo_id: UUID, size: str, db: Db, token: str | None = None) -> Response:
     """Photo d'une carte partagée (RG-02). Refusée dès que le partage est retiré."""

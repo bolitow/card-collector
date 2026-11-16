@@ -198,12 +198,22 @@ facilement.
 | 4 | Signalement par un visiteur sans compte (F-45) | Autorisé, limité en débit. |
 | 5 | Confirmation de l'âge (F-29) | Case à cocher déclarative ; aucune date de naissance n'est stockée. |
 | 6 | Recherche « wk3 » | Un jeton qui contient un chiffre doit égaler un code ou sa partie numérique : « wk3 » trouve WK-3, pas WK-30. |
+| 7 | Photo envoyée puis enregistrement en échec (F-21) | La photo est supprimée quand l'utilisateur ferme le formulaire sans enregistrer, pas dès la première erreur : il peut corriger et réessayer sans reprendre la photo. |
+| 8 | Quantité absente dans un document du prototype | Lue comme 1, comme l'écrit l'annexe E. Le contrôle des totaux de la reprise dira si c'est juste ; l'option `--missing-quantity 0` existe. |
+| 9 | Cartes recherchées du prototype | Avec une raison : marque éditoriale ; sans raison : marque personnelle du porteur. Option `--chase` de la reprise. |
 
 Questions ouvertes de la section 17 : aucune n'est tranchée dans le code. Nom du produit, éditeur
 du service et adresses légales sont des variables de configuration ; les hypothèses de la
 section 1.5 s'appliquent.
 
-## 10. Ce qui n'est pas vérifiable d'ici
+## 10. Ajouts au cahier des charges
+
+Cinq ajouts, listés dans la note de version (`CHANGELOG.md`) : liste de manquantes au format
+compact, comparaison avec une collection partagée, « Moi aussi » sur les demandes de séries, toutes
+les cartes d'un joueur, rattachement des achats en texte libre à la publication d'une série. Aucun
+ne montre un prix, une quantité ou un double (RG-02), et aucun n'ajoute de messagerie.
+
+## 11. Ce qui n'est pas vérifiable d'ici
 
 - Les appels réels à l'API Claude (pas de clé) : le code suit la documentation, les tests passent
   par un fournisseur simulé.

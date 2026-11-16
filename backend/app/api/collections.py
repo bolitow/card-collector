@@ -32,6 +32,7 @@ from app.schemas import (
     IsolatedOut,
     ParallelIn,
     ParallelOut,
+    ParallelPriceIn,
     ParallelPurchaseOut,
     PersonalCardIn,
     PersonalCardOut,
@@ -341,6 +342,36 @@ def update_parallel(parallel_id: int, body: ParallelIn, user: CurrentUser, db: D
     parallel = collections.get_parallel(db, user, parallel_id)
     data = body.model_dump(exclude_unset=True)
     collections.update_parallel(db, user, parallel, data.get("name"), data.get("photo_id", collections.UNSET))
+    return _parallel_out(db, parallel)
+
+
+@router.post("/parallels/{parallel_id}/purchase", status_code=201)
+def price_parallel(parallel_id: int, body: ParallelPriceIn, user: CurrentUser, db: Db) -> ParallelOut:
+    """F-17 : « Ajouter le prix d'achat » crée un achat relié au parallèle, sans double saisie."""
+    parallel = collections.get_parallel(db, user, parallel_id)
+    if parallel.purchase_id is not None:
+        raise Conflict(code="parallel_already_priced")
+    ref = parallel.user_card.card_ref
+    purchase = Purchase(
+        user_id=user.id,
+        series_id=ref.series_id,
+        series_name=ref.series.name,
+        universe_id=ref.series.universe_id,
+        card_ref_id=ref.id,
+        code=ref.code,
+        name=ref.name,
+        variant=parallel.name,
+        as_parallel=True,
+        applied=True,  # la carte est déjà dans la collection : rien n'est reporté une seconde fois
+        photo_id=parallel.photo_id,
+        price=body.price,
+        fees=body.fees,
+        bought_on=body.bought_on,
+        platform=body.platform.strip(),
+    )
+    db.add(purchase)
+    db.flush()
+    parallel.purchase_id = purchase.id
     return _parallel_out(db, parallel)
 
 

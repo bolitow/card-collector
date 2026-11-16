@@ -20,7 +20,9 @@ from app.models import (
     User,
     UserSeries,
 )
+from app.rules import codes
 from app.schemas import (
+    CandidateOut,
     CatalogOut,
     ChaseOut,
     GroupOut,
@@ -147,6 +149,31 @@ def series_cards(series_id: int, db: Db, v: int | None = None) -> Response:
     cache = "public, max-age=31536000, immutable" if immutable else "no-cache"
     return Response(
         catalog.series_cards(db, series), media_type="application/json", headers={"Cache-Control": cache}
+    )
+
+
+@router.get("/catalog/series/{series_id}/ref")
+def find_ref(series_id: int, code: str, db: Db) -> CandidateOut:
+    """Référence d'une série par son code (RG-13 : « 007 » = « 7 »). Sert à la saisie d'une carte."""
+    series = catalog.get_published(db, series_id)
+    try:
+        key = codes.code_key(code)
+    except codes.InvalidCode as error:
+        raise NotFound(code="card_not_found") from error
+    ref = db.scalar(
+        select(CardRef).where(
+            CardRef.series_id == series.id, CardRef.code_key == key, CardRef.status == "active"
+        )
+    )
+    if ref is None:
+        raise NotFound(code="card_not_found")
+    return CandidateOut(
+        series_id=series.id,
+        series_name=series.name,
+        card_ref_id=ref.id,
+        code=ref.code,
+        name=ref.name,
+        group=ref.group.name,
     )
 
 
