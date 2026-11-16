@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+backend/var/
+
+# Node
+node_modules/
+web/dist/
+web/dev-dist/
+
+# Environnement
+.env
+.env.*
+!.env.example
+
+# Divers
+.DS_Store
+*.log

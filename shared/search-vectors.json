@@ -1,0 +1,40 @@
+{
+  "comment": "Vecteurs de test communs à backend/app/rules/search.py et web/src/lib/search.ts (F-09, CA-12).",
+  "cards": [
+    {"id": "wk3", "code": "WK-3", "name": "Kon Knueppel", "group": "Winning Kicks", "teams": ["Charlotte Hornets"]},
+    {"id": "wk30", "code": "WK-30", "name": "Egor Dëmin", "group": "Winning Kicks", "teams": ["Brooklyn Nets"]},
+    {"id": "90", "code": "90", "name": "Julian Brandt", "group": "Base", "teams": ["Borussia Dortmund"]},
+    {"id": "261", "code": "261", "name": "Mikel Brown Jr. RC", "group": "Base", "teams": ["Brooklyn Nets"]},
+    {"id": "op", "code": "OP17-045", "name": "Monkey.D.Luffy", "group": "Base", "teams": []},
+    {"id": "oneal", "code": "7", "name": "Shaquille O'Neal", "group": "Legends", "teams": ["Los Angeles Lakers"]},
+    {"id": "003", "code": "003", "name": "Kylian Mbappé", "group": "Base", "teams": ["Real Madrid CF"]}
+  ],
+  "queries": [
+    {"q": "3", "expect": ["wk3", "003"]},
+    {"q": "nets", "expect": ["wk30", "261"]},
+    {"q": "hornets", "expect": ["wk3"]},
+    {"q": "wk3", "expect": ["wk3"]},
+    {"q": "WK-3", "expect": ["wk3"]},
+    {"q": "wk", "expect": ["wk3", "wk30"]},
+    {"q": "#90", "expect": ["90"]},
+    {"q": "90", "expect": ["90"]},
+    {"q": "mbappe", "expect": ["003"]},
+    {"q": "MBAPPÉ", "expect": ["003"]},
+    {"q": "demin", "expect": ["wk30"]},
+    {"q": "brook br", "expect": ["wk30", "261"]},
+    {"q": "brown brook", "expect": ["261"]},
+    {"q": "45", "expect": ["op"]},
+    {"q": "045", "expect": ["op"]},
+    {"q": "op17", "expect": ["op"]},
+    {"q": "op17-045", "expect": ["op"]},
+    {"q": "luffy", "expect": ["op"]},
+    {"q": "oneal", "expect": ["oneal"]},
+    {"q": "o'neal", "expect": ["oneal"]},
+    {"q": "neal", "expect": ["oneal"]},
+    {"q": "7", "expect": ["oneal"]},
+    {"q": "rc", "expect": ["261"]},
+    {"q": "winning 30", "expect": ["wk30"]},
+    {"q": "ets", "expect": []},
+    {"q": "wk31", "expect": []}
+  ]
+}
